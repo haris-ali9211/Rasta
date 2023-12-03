@@ -6,16 +6,44 @@ import "./App.css";
 
 function App() {
   const [count, setCount] = useState(0);
+  const [location, setLocation] = useState(null);
+  console.log("🚀 ~ file: App.jsx:10 ~ App ~ location:", location)
 
   useEffect(() => {
     // Connect to the WebSocket server
     const socket = io("http://localhost:9864"); // Replace with the correct URL
 
     // Listen for messages from the server
-    socket.on("message", (data) => {
-      console.log("Received message from server:");
+    socket.on("send", (data) => {
+      console.log("received message from server:", data);
     });
+
+    // Send a message to the server
+    socket.emit("message", "Hello, server!");
+
+    // Cleanup function to disconnect the socket when the component unmounts
+    return () => {
+      socket.disconnect();
+    };
   }, []);
+
+  useEffect(() => {
+    // Check if the browser supports geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // Extract latitude and longitude from the position object
+          const { latitude, longitude } = position.coords;
+          setLocation({ latitude, longitude });
+        },
+        (error) => {
+          console.error("Error getting location:", error.message);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  }, []); // Empty dependency array to run the effect only once when the component mounts
 
   return (
     <>

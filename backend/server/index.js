@@ -2,6 +2,7 @@ const express = require("express");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const connectDB = require("../config/db");
+const colors = require("colors");
 require("dotenv").config();
 
 
@@ -25,8 +26,18 @@ const io = new Server(httpServer, {
 });
 
 io.on("connection", (socket) => {
-    console.log("We are live and connected");
-    console.log(socket.id);
+    console.log('A user connected');
+
+    // Broadcasting a message to all connected clients
+    socket.on('message', (data) => {
+        console.log('Received message from a client:', data.yellow.underline.bold);
+
+        io.emit('send', "welcome");
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+    });
 });
 
 app.get("/", (req, res) => {
@@ -34,7 +45,7 @@ app.get("/", (req, res) => {
 });
 
 httpServer.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+    console.log(`Server running on PORT ${port}...🚀`);
 });
 
 
