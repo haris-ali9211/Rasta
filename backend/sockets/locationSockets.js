@@ -7,6 +7,8 @@ function configureLocationSocket(io) {
         socket.on('location', async (data) => {
             try {
                 if (data.longitude != null || data.latitude != null) {
+
+                    //! here need to add Location Data Compression
                     const location = new Location({
                         sampleId: data.userId,
                         coordinates: {
