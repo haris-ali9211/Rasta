@@ -3,8 +3,12 @@ const mongoose = require('mongoose');
 const locationSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'User'
+        // required: true,
+        // ref: 'User'
+    },
+    sampleId: {
+        type: String, 
+        required: true
     },
     coordinates: {
         type: {

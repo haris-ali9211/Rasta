@@ -5,6 +5,8 @@ const userRoute = require('../routes/userRoutes')
 const colors = require("colors");
 require("dotenv").config();
 const cors = require("cors");
+const { Server } = require("socket.io");
+const locationSocket = require("../sockets/locationSockets")
 
 let app = express();
 const port = process.env.PORT || 3001;
@@ -15,11 +17,19 @@ app.use(express.urlencoded({ extended: true }));
 // connect to database
 connectDB();
 
+// socket connection
 const httpServer = createServer(app);
+const io = new Server(httpServer, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+    },
+});
 
-//socket configuration
-require('../sockets/locationSockets')(httpServer);
+locationSocket(io);
 
+
+//  apis
 app.get("/", (req, res) => {
     res.send("Hello World!");
 });

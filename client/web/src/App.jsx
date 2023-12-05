@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
+import { v4 as uuidv4 } from "uuid";
 import "./App.css";
 
 const generateRandomLocation = () => {
@@ -17,47 +18,43 @@ const generateRandomLocation = () => {
 };
 
 function App() {
-  const [counterString, setCount] = useState(0);
   const [location, setLocation] = useState(null);
 
   const updateLocationAndEmit = (socket) => {
-    const counterString = generateRandomLocation();
-    setCount(counterString);
-    socket.emit("message", counterString);
+    socket.emit("location", {
+      userId: uuidv4(),
+      latitude: location?.latitude,
+      longitude: location?.longitude,
+    });
   };
 
   useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setLocation({ latitude, longitude });
+        },
+        (error) => {
+          console.error("Error getting location:", error.message);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  }, []);
+
+  useEffect(() => {
     const socket = io("http://localhost:9864");
-
-    // Initial call to set up the location
     updateLocationAndEmit(socket);
-
-    // Set up an interval to update location every 3 seconds
     const intervalId = setInterval(() => updateLocationAndEmit(socket), 3000);
-
     return () => {
-      clearInterval(intervalId); 
+      clearInterval(intervalId);
       socket.disconnect();
     };
-  }, []); 
+  }, [location]);
 
-   useEffect(() => {
-     if (navigator.geolocation) {
-       navigator.geolocation.getCurrentPosition(
-         (position) => {
-           const { latitude, longitude } = position.coords;
-           setLocation({ latitude, longitude });
-         },
-         (error) => {
-           console.error("Error getting location:", error.message);
-         }
-       );
-     } else {
-       console.error("Geolocation is not supported by this browser.");
-     }
-   }, []);
-
-  return <>String ID: {counterString}</>;
+  return <>Testing websocket location </>;
 }
 
 export default App;
