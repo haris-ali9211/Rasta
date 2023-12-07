@@ -19,6 +19,7 @@ const generateRandomLocation = () => {
 
 function App() {
   const [location, setLocation] = useState(null);
+  console.log("location", location)
 
   const updateLocationAndEmit = (socket) => {
     socket.emit("location", {
@@ -28,21 +29,21 @@ function App() {
     });
   };
 
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setLocation({ latitude, longitude });
-        },
-        (error) => {
-          console.error("Error getting location:", error.message);
-        }
-      );
-    } else {
-      console.error("Geolocation is not supported by this browser.");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         setLocation({ latitude, longitude });
+  //       },
+  //       (error) => {
+  //         console.error("Error getting location:", error.message);
+  //       }
+  //     );
+  //   } else {
+  //     console.error("Geolocation is not supported by this browser.");
+  //   }
+  // }, []);
 
   useEffect(() => {
     const socket = io("http://localhost:9864");
@@ -54,7 +55,22 @@ function App() {
     };
   }, [location]);
 
-  return <>Testing websocket location </>;
+  const handleSendLocation = () => {
+    console.log("click")
+    try{
+      const socket = io("http://localhost:9864");
+      updateLocationAndEmit(socket);
+      // socket.disconnect();
+    }catch(e){
+      console.log(e)
+    }
+   
+  };
+
+  return <><h1>Testing websocket location</h1>
+    <button onClick={handleSendLocation}>Send Location</button>
+
+  </>;
 }
 
 export default App;
