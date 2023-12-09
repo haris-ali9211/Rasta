@@ -1,62 +1,72 @@
 const Location = require("../model/locationModel");
-
-// Function to reduce the precision of coordinates
-const reducePrecision = (coordinate, precision = 6) => Math.round(coordinate * 10 ** precision) / 10 ** precision;
+const turf = require("@turf/turf"); // GeoJSON library
 
 // Function to validate if a value is a valid number
 const isValidNumber = (value) => /^-?\d+(\.\d+)?$/.test(value);
 
 function configureLocationSocket(io) {
     io.on("connection", (socket) => {
-        console.log('A user connected');
+        console.log("A user connected");
 
-        // Initialize previous location as null
-        let previousLocation = null;
-
-        socket.on('location', async (data) => {
+        socket.on("location", async (data) => {
             try {
                 const { longitude, latitude, userId } = data;
 
                 // Validate longitude and latitude using regex
                 if (isValidNumber(longitude) && isValidNumber(latitude)) {
+                    // Reduce precision of coordinates using GeoJSON
+                    const compressedLocation = turf.simplify(
+                        {
+                            type: "Point",
+                            coordinates: [longitude, latitude],
+                        },
+                        { tolerance: 0.01, highQuality: false }
+                    );
 
-                    // Reduce precision of coordinates before saving
-                    const reducedLongitude = reducePrecision(parseFloat(longitude));
-                    const reducedLatitude = reducePrecision(parseFloat(latitude));
+                    // Prepare data for saving
+                    const locationData = {
+                        userId: userId,
+                        coordinates: {
+                            type: "Point",
+                            coordinates: [parseFloat(longitude), parseFloat(latitude)],
+                        },
+                        compressedCoordinates: {
+                            type: "GeoJSON",
+                            coordinates: [compressedLocation.coordinates[0], compressedLocation.coordinates[1]],
+                        },
+                    };
 
-                    console.log("reducedLongitude", reducedLongitude);
-                    console.log("reducedLatitude", reducedLatitude);
-
-                    // Check if the current location is different from the previous location
-                    if (
-                        previousLocation &&
-                        reducedLongitude === previoausLocation.coordinates.coordinates[0] &&
-                        reducedLatitude === previousLocation.coordinates.coordinates[1]
-                    ) {
-                        console.log("Location unchanged. Not saving to the database.".red);
-                    } else {
-                        const location = new Location({
-                            sampleId: userId,
-                            coordinates: {
-                                type: 'Point',
-                                coordinates: [reducedLongitude, reducedLatitude],
-                            },
-                        });
-
-                        await location.save();
-                        console.log("Data saved".green);
-                        previousLocation = location;
+                    // Simplify logic by directly comparing compressed location with existing locations in the database
+                    var coordinates = {
+                        type: "GeoJSON",
+                        coordinates: [compressedLocation.coordinates[0], compressedLocation.coordinates[1]],
                     }
+                    const existingLocation = await Location.findOne({ userId: "3ac2ba87-e023-4661-ac51-ac2b238ac24d" }); // Identify based on the unique user connection
+                    var coordinates1 = existingLocation.compressedCoordinates.coordinates
+                    console.log("check", coordinates, "data", coordinates1)
+                    console.log("🚀 ~", turf.booleanEqual(coordinates, coordinates1))
+
+                    // if (
+                    //     existingLocation &&
+                    //     turf.booleanEqual(compressedLocation, existingLocation.compressedCoordinates.coordinates)
+                    // ) {
+                    //     console.log("Location unchanged. Not saving to the database.".red);
+                    // } else {
+                    //     // Save the location data
+                    //     const location = new Location(locationData);
+                    //     await location.save();
+                    //     console.log("Data saved with compression".green);
+                    // }
                 } else {
-                    console.error('Invalid longitude or latitude values'.red);
+                    console.error("Invalid longitude or latitude values".red);
                 }
             } catch (error) {
-                console.error('Error saving location data to the database:', error.red);
+                console.error("Error saving location data to the database:", error);
             }
         });
 
-        socket.on('disconnect', () => {
-            console.log('User disconnected');
+        socket.on("disconnect", () => {
+            console.log("User disconnected");
         });
     });
 }

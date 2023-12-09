@@ -19,9 +19,11 @@ const generateRandomLocation = () => {
 
 function App() {
   const [location, setLocation] = useState(null);
-  console.log("location", location)
+  console.log("location", location);
 
   const updateLocationAndEmit = (socket) => {
+    console.log("🚀:", uuidv4());
+
     socket.emit("location", {
       userId: uuidv4(),
       latitude: location?.latitude,
@@ -29,48 +31,49 @@ function App() {
     });
   };
 
-  // useEffect(() => {
-  //   if (navigator.geolocation) {
-  //     navigator.geolocation.getCurrentPosition(
-  //       (position) => {
-  //         const { latitude, longitude } = position.coords;
-  //         setLocation({ latitude, longitude });
-  //       },
-  //       (error) => {
-  //         console.error("Error getting location:", error.message);
-  //       }
-  //     );
-  //   } else {
-  //     console.error("Geolocation is not supported by this browser.");
-  //   }
-  // }, []);
-
   useEffect(() => {
-    const socket = io("http://localhost:9864");
-    updateLocationAndEmit(socket);
-    const intervalId = setInterval(() => updateLocationAndEmit(socket), 3000);
-    return () => {
-      clearInterval(intervalId);
-      socket.disconnect();
-    };
-  }, [location]);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => { 
+          const { latitude, longitude } = position.coords;
+          setLocation({ latitude, longitude });
+        },
+        (error) => {
+          console.error("Error getting location:", error.message);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  }, []);
+
+  // useEffect(() => {
+  //   const socket = io("http://localhost:9864");
+  //   updateLocationAndEmit(socket);
+  //   const intervalId = setInterval(() => updateLocationAndEmit(socket), 3000);
+  //   return () => {
+  //     clearInterval(intervalId);
+  //     socket.disconnect();
+  //   };
+  // }, [location]);
 
   const handleSendLocation = () => {
-    console.log("click")
-    try{
+    console.log("click");
+    try {
       const socket = io("http://localhost:9864");
       updateLocationAndEmit(socket);
       // socket.disconnect();
-    }catch(e){
-      console.log(e)
+    } catch (e) {
+      console.log(e);
     }
-   
   };
 
-  return <><h1>Testing websocket location</h1>
-    <button onClick={handleSendLocation}>Send Location</button>
-
-  </>;
+  return (
+    <>
+      <h1>Testing websocket location</h1>
+      <button onClick={handleSendLocation}>Send Location</button>
+    </>
+  );
 }
 
 export default App;
