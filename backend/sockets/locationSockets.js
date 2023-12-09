@@ -30,7 +30,7 @@ function configureLocationSocket(io) {
                     // Check if the current location is different from the previous location
                     if (
                         previousLocation &&
-                        reducedLongitude === previousLocation.coordinates.coordinates[0] &&
+                        reducedLongitude === previoausLocation.coordinates.coordinates[0] &&
                         reducedLatitude === previousLocation.coordinates.coordinates[1]
                     ) {
                         console.log("Location unchanged. Not saving to the database.".red);
