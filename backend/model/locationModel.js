@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const locationSchema = new mongoose.Schema({
-    // userId: {
+// userId: {
     //     type: mongoose.Schema.Types.ObjectId,
     //     required: true,
     //     ref: 'User'
@@ -10,7 +10,6 @@ const locationSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    // Add a field to store compressed coordinates
     compressedCoordinates: {
         type: {
             type: String,
@@ -22,7 +21,6 @@ const locationSchema = new mongoose.Schema({
             required: true
         }
     },
-    // Maintain original coordinates for potential reference
     coordinates: {
         type: {
             type: String,
@@ -38,6 +36,8 @@ const locationSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
+}, {
+    timestamps: true
 });
 
 locationSchema.index({ coordinates: '2dsphere' });

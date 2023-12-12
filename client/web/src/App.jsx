@@ -22,10 +22,8 @@ function App() {
   console.log("location", location);
 
   const updateLocationAndEmit = (socket) => {
-    console.log("🚀:", uuidv4());
-
     socket.emit("location", {
-      userId: uuidv4(),
+      userId: "3ac2ba87-e023-4661-ac51-ac2b238ac24d",
       latitude: location?.latitude,
       longitude: location?.longitude,
     });
@@ -34,7 +32,7 @@ function App() {
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => { 
+        (position) => {
           const { latitude, longitude } = position.coords;
           setLocation({ latitude, longitude });
         },
