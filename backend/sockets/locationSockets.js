@@ -68,7 +68,6 @@ const saveLocationData = async (userId, longitude, latitude) => {
 
         return { lastUpdate };
 
-        return { lastUpdate };
     } catch (error) {
         console.error("Error saving location data to the database:", error);
         return { error };

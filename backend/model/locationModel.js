@@ -32,10 +32,6 @@ const locationSchema = new mongoose.Schema({
             required: true
         }
     },
-    timestamp: {
-        type: Date,
-        default: Date.now
-    }
 }, {
     timestamps: true
 });
